@@ -22,7 +22,8 @@ Import the data stored in the file `'titanic.csv'` and print the first five rows
 # Import the data
 
 
-df = None
+df = pd.read_csv("titanic.csv")
+df.head()
 
 ```
 
@@ -34,6 +35,9 @@ Your target variable is in the column `'Survived'`. A `0` indicates that the pas
 ```python
 # Total number of people who survived/didn't survive
 
+survived = len(df[df["Survived"] == 1])
+dead = len(df[df["Survived"] == 0])
+print(f'Survived: {survived}\n    Dead: {dead}')
 ```
 
 Only consider the columns specified in `relevant_columns` when building your model. The next step is to create dummy variables from categorical variables. Remember to drop the first level for each categorical column and make sure all the values are of type `float`: 
@@ -42,8 +46,14 @@ Only consider the columns specified in `relevant_columns` when building your mod
 ```python
 # Create dummy variables
 relevant_columns = ['Pclass', 'Age', 'SibSp', 'Fare', 'Sex', 'Embarked', 'Survived']
-dummy_dataframe = None
+df_relevant = df[relevant_columns]
 
+# Convert categorical columns to type 'category' to ensure proper encoding
+for col in df_relevant.select_dtypes(include='object').columns:
+    df_relevant[col] = df_relevant[col].astype('category')
+
+dummy_dataframe = pd.get_dummies(df_relevant, drop_first = True, dtype = float)
+                                
 dummy_dataframe.shape
 ```
 
@@ -54,7 +64,7 @@ Did you notice above that the DataFrame contains missing values? To keep things 
 
 ```python
 # Drop missing rows
-dummy_dataframe = None
+dummy_dataframe = dummy_dataframe.dropna(axis=0) #dropping by row
 dummy_dataframe.shape
 ```
 
@@ -63,8 +73,8 @@ Finally, assign the independent variables to `X` and the target variable to `y`:
 
 ```python
 # Split the data into X and y
-y = None
-X = None
+y = dummy_dataframe["Survived"]
+X = dummy_dataframe.drop("Survived", axis=1)
 ```
 
 ## Fit the model
@@ -76,7 +86,13 @@ Now with everything in place, you can build a logistic regression model using `s
 
 ```python
 # Build a logistic regression model using statsmodels
+import statsmodels.api as sm
 
+# Add intercept term
+X = sm.add_constant(X)
+
+# Fit logistic regression model
+logit_model = sm.Logit(y, X)
 ```
 
 ## Analyze results
@@ -86,29 +102,19 @@ Generate the summary table for your model. Then, comment on the p-values associa
 
 ```python
 # Summary table
+# Obtain the results
+logit_result = logit_model.fit()
 
+# Print summary of the model
+print(logit_result.summary())
 ```
 
 
 ```python
 # Your comments here
-
+Based on the p-values from the model: The intercept term together with the variables Pclass, Age, SibSp and Sex_male are statistically significant in the model since their p-values are less than 0.05 The variables Fare, Embarked_Q and Embarked_S are not statistically significant since their pvalues are greater than 0.05 which implies that they have little contribution in prediction of the survival.
 ```
 
-## Level up (Optional)
-
-Create a new model, this time only using those features you determined were influential based on your analysis of the results above. How does this model perform?
-
-
-```python
-# Your code here
-
-```
-
-
-```python
-# Your comments here
-```
 
 ## Summary 
 
