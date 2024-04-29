@@ -110,10 +110,10 @@ print(logit_result.summary())
 ```
 
 
-```python
-# Your comments here
+
+### Your comments here
 Based on the p-values from the model: The intercept term together with the variables Pclass, Age, SibSp and Sex_male are statistically significant in the model since their p-values are less than 0.05 The variables Fare, Embarked_Q and Embarked_S are not statistically significant since their pvalues are greater than 0.05 which implies that they have little contribution in prediction of the survival.
-```
+
 
 
 ## Summary 
