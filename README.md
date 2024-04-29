@@ -38,8 +38,22 @@ Recall the dataset contains information about whether or not a patient has heart
 
 ```python
 # Split the data into target and predictors
-y = None
-X = None
+y = df["target"]
+X = df.drop("target", axis = 1)
+```
+
+## Normalize the data 
+
+Normalize the data (`X`) prior to fitting the model. 
+
+
+```python
+# normalize (subract mean and divide by std)
+def normalize(feature):
+    return (feature - feature.mean()) / feature.std()
+
+X = X.apply(normalize)
+X.head()
 ```
 
 ## Train- test split 
@@ -53,19 +67,9 @@ N.B. To avoid possible data leakage, it is best to split the data first, and the
 
 ```python
 # Split the data into training and test sets
-X_train, X_test, y_train, y_test = None
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=0)
 ```
 
-## Normalize the data 
-
-Normalize the data (`X`) prior to fitting the model. 
-
-
-```python
-# Your code here
-X = None
-X.head()
-```
 
 ## Fit a model
 
@@ -78,10 +82,10 @@ X.head()
 
 ```python
 # Instantiate the model
-logreg = None
+logreg = LogisticRegression(fit_intercept=False, C=1e12, solver='liblinear')
 
 # Fit the model
-
+logreg.fit(X_train, y_train)
 ```
 
 ## Predict
@@ -90,8 +94,8 @@ Generate predictions for the training and test sets.
 
 ```python
 # Generate predictions
-y_hat_train = None
-y_hat_test = None
+y_hat_train = logreg.predict(X_train)
+y_hat_test = logreg.predict(X_test)
 ```
 
 ## How many times was the classifier correct on the training set?
@@ -99,7 +103,12 @@ y_hat_test = None
 
 ```python
 # Your code here
-
+results = 0
+for idx, y in enumerate(y_hat_train):
+    if y_hat_train[idx] == list(y_train)[idx]:
+        results += 1
+        
+print(f"The classifier was correct {results} times on the training set out of {len(y_train)}")
 ```
 
 ## How many times was the classifier correct on the test set?
@@ -108,15 +117,19 @@ y_hat_test = None
 ```python
 # Your code here
 
+results_test = 0
+for idx, y in enumerate(y_hat_test):
+    if y_hat_test[idx] == list(y_test)[idx]:
+        results_test += 1
+        
+print(f"The classifier was correct {results_test} times on the test set out of {len(y_test)}")
 ```
 
 ## Analysis
 Describe how well you think this initial model is performing based on the training and test performance. Within your description, make note of how you evaluated performance as compared to your previous work with regression.
 
-
-```python
-# Your analysis here
-```
+#### Your analysis here
+The model is 82.89% accurate on the test based on the simple calculations above, and 84.58% accurate on the training dataset.
 
 ## Summary
 
