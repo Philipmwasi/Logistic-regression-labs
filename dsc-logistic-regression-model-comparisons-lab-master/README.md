@@ -11,6 +11,12 @@ In this lab, you'll investigate using scikit-learn with regularization in order 
 
 ```python
 # Import the necessary packages
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import ConfusionMatrixDisplay, roc_curve, auc
 ```
 
 ## Import the data
@@ -21,10 +27,10 @@ Import the dataset stored in `'heart.csv'`.
 ```python
 # Import the data
 
-df = None
+df = pd.read_csv('heart.csv')
 
 # Print the first five rows of the data
-
+df.head()
 ```
 
 ## Split the data
@@ -34,8 +40,18 @@ Define `X` and `y` where the latter is the `target` variable. This time, follow 
 
 ```python
 # Define X and y
-y = None
-X = None
+y = df['target']
+X = df.drop('target', axis = 1)
+
+# normalize (subract mean and divide by std)
+def normalize(feature):
+    return (feature - feature.mean()) / feature.std()
+
+X = X.apply(normalize)
+
+# Split the data into training and test sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=17)
+print(y_train.value_counts(),'\n\n', y_test.value_counts())
 
 # Split the data into training and test sets
 
@@ -53,6 +69,13 @@ Turn off the intercept and set the regularization parameter, `C`, to a ridiculou
 
 ```python
 # Your code here
+from sklearn.linear_model import LogisticRegression
+
+#instantiate the model
+log_reg = LogisticRegression(fit_intercept=False, C=1e16, solver='liblinear')
+
+# fit the model on the training dataset
+log_reg.fit(X_train, y_train)
 ```
 
 ## Create an ROC Curve for the scikit-learn model
@@ -63,11 +86,11 @@ Use both the training and test sets.
 ```python
 # Your code here
 
-y_train_score = None
-y_test_score = None
+y_train_score = log_reg.predict_proba(X_train)[:,1]
+y_test_score = log_reg.predict_proba(X_test)[:,1]
 
-train_fpr, train_tpr, train_thresholds = None
-test_fpr, test_tpr, test_thresholds = None
+train_fpr, train_tpr, train_thresholds = roc_curve(y_train, y_train_score)
+test_fpr, test_tpr, test_thresholds = roc_curve(y_test, y_test_score)
 
 
 print('Train AUC: {}'.format(auc(train_fpr, train_tpr)))
@@ -100,8 +123,10 @@ Now add an intercept to the scikit-learn model. Keep the regularization paramete
 
 ```python
 # Create new model
-logregi = None
+logregi = LogisticRegression(fit_intercept=True, C=1e16, solver='liblinear')
 
+#fiting the model on the dataset
+logregi.fit(X_train, y_train)
 ```
 
 Generate predictions for the training and test sets.
@@ -109,8 +134,8 @@ Generate predictions for the training and test sets.
 
 ```python
 # Generate predictions
-y_hat_train = None
-y_hat_test = None
+y_hat_train = logregi.predict(X_train)
+y_hat_test_1 = logregi.predict(X_test)
 ```
 
 Plot all three models ROC curves on the same graph.
@@ -135,8 +160,8 @@ plt.plot(train_fpr, train_tpr, color='blue',
 
 
 # Second model plots
-y_test_score = logreg.decision_function(X_test)
-y_train_score = logreg.decision_function(X_train)
+y_test_score = log_reg.decision_function(X_test)
+y_train_score = log_reg.decision_function(X_train)
 
 test_fpr, test_tpr, test_thresholds = roc_curve(y_test, y_test_score)
 train_fpr, train_tpr, train_thresholds = roc_curve(y_train, y_train_score)
@@ -152,8 +177,8 @@ plt.plot(train_fpr, train_tpr, color='gold',
 
 
 # Third model plots
-y_test_score = None
-y_train_score = None
+y_test_score = logregi.decision_function(X_test)
+y_train_score = logregi.decision_function(X_train)
 
 test_fpr, test_tpr, test_thresholds = roc_curve(y_test, y_test_score)
 train_fpr, train_tpr, train_thresholds = roc_curve(y_train, y_train_score)
@@ -188,7 +213,13 @@ Regularization parameters between 1 and 20 are recommended. Observe the differen
 
 
 ```python
-# Your code here
+log_reg_1 = LogisticRegression(fit_intercept=True, C=1e5, solver = 'liblinear')
+
+# fit the modelon the training dataset
+log_reg_1.fit(X_train, y_train)
+
+#predict on the test dataset
+y_hat_test_1 = log_reg_1.predict(X_test)
 ```
 
 How did the regularization parameter impact the ROC curves plotted above? 
